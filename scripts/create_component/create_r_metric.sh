@@ -3,6 +3,6 @@
 set -e
 
 common/scripts/create_component \
-  --name my_r_metric \
+  --name sctypeeval \
   --language r \
   --type metric
