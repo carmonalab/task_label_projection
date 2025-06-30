@@ -1,5 +1,8 @@
-library(anndata)
-library(scTypeEval)
+requireNamespace("anndata", quietly = TRUE)
+suppressPackageStartupMessages({
+  library(scTypeEval)
+  library(Matrix)
+})
 
 ## VIASH START
 par <- list(
@@ -20,17 +23,64 @@ input_prediction <- anndata::read_h5ad(par[["input_prediction"]])
 # Check that obs_names (i.e., rownames of obs data frame) match
 stopifnot(identical(rownames(input_prediction$obs), rownames(input_solution$obs)))
 
-matrix <- input_solution$layers['counts']
+counts_r <- Matrix::t(input_solution$layers[["counts"]])
+# Convert to a regular sparse matrix first and then to dgCMatrix
+matrix <- as(as(counts_r, "CsparseMatrix"), "dgCMatrix")
 metadata <- cbind(input_solution$obs, input_prediction$obs)
 
 cat("Compute metrics\n")
-# metric_ids and metric_values can have length > 1
-# but should be of equal length
-uns_metric_ids <- c("sctypeeval")
-uns_metric_values <- c(0.5)
+# annotations to evaluate
+annots <- c("label", "label_pred")
+# sample id
+sample <- "batch"
+# black list
+data(default_black_list)
+bl <- list(black.list$TCR,
+          black.list$Immunoglobulins,
+          black.list$Ygenes) |> unlist()
+# Internal validation metrics
+IntVal_metric <- c("silhouette", "NeighborhoodPurity", "ward.PropMatch",
+                  "modularity", "ward.NMI", "ward.ARI","GraphConnectivity",
+                   "Orbital.centroid", "Orbital.medoid")
 
-cat("Write output AnnData to file\n")
+cat("Creating scTypeEval object\n")
+sceval <- create.scTypeEval(matrix = matrix,
+                            metadata = metadata)
+
+cat("Adding HVG gene list\n")
+sceval <- add.HVG(sceval,
+                  sample = sample,
+                  black.list = bl
+                  )
+
+consistency_df <- 
+  lapply(annots,
+        function(annot){
+          Run.scTypeEval(scTypeEval = sceval,
+                          ident = annot, # annotation method to evaluate
+                          sample = sample,
+                          IntVal.metric = IntVal_metric,
+                          BH.method = c("Mutual.Score", "Mutual.Match"),
+                          data.type = c("sc", "pseudobulk", "pseudobulk_1vsall"),
+                          black.list = bl,
+                          progressbar = F,
+                          verbose = F
+                          )
+    })
+
+consistency_df <- do.call(rbind, consistency_df)
+
+cat(">> Create output data\n")
 output <- anndata::AnnData(
-  
+  obs = consistency_df,
+  uns = list(
+    method_id = meta$name,
+    dataset_id = input_test$uns[["dataset_id"]],
+  ),
+  shape = c(input_test$n_obs, 0L)
 )
-output$write_h5ad(par[["output"]], compression = "gzip")
+
+cat(">> Write output to file\n")
+output$write_h5ad(par$output, compression = "gzip")
+
+
