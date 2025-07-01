@@ -8,8 +8,8 @@ cd "$REPO_ROOT"
 
 set -e
 
-DATASETS_DIR="resources_test/common"
-OUTPUT_DIR="output/process_datasets_test"
+DATASETS_DIR="../datasets"
+OUTPUT_DIR="resources/test"
 
 if [ ! -d "$OUTPUT_DIR" ]; then
   mkdir -p "$OUTPUT_DIR"
@@ -18,7 +18,7 @@ fi
 export NXF_VER=24.04.3
 
 nextflow run . \
-  -main-script target/nextflow/workflows/process_datasets/main.nf \
+  -main-script src/workflows/process_datasets/main.nf \
   -profile docker \
   -entry auto \
   -c common/nextflow_helpers/labels_ci.config \

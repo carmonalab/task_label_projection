@@ -11,38 +11,20 @@ methods = [
   majority_vote,
   random_labels,
   true_labels,
-  geneformer,
   knn,
   logistic_regression,
   mlp,
   naive_bayes,
   scanvi,
   scanvi_scarches,
-
-  scgpt_finetuned.run(
-    args: [model: file("s3://openproblems-work/cache/scGPT_human.zip")]
-  ),
-  scgpt_zeroshot.run(
-    args: [model: file("s3://openproblems-work/cache/scGPT_human.zip")]
-  ),
-  scimilarity.run(
-    args: [model: file("s3://openproblems-work/cache/scimilarity-model_v1.1.tar.gz")]
-  ),
-  scimilarity_knn.run(
-    args: [model: file("s3://openproblems-work/cache/scimilarity-model_v1.1.tar.gz")]
-  ),
-  scprint,
   seurat_transferdata,
   singler,
-  uce.run(
-    args: [model: file("s3://openproblems-work/cache/uce-model-v5.zip")]
-  ),
-  xgboost
 ]
 
 metrics = [
   accuracy,
-  f1
+  f1,
+  sctypeeval
 ]
 
 workflow run_wf {

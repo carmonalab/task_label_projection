@@ -15,13 +15,13 @@ set -e
 
 # generate a unique id
 RUN_ID="run_$(date +%Y-%m-%d_%H-%M-%S)"
-publish_dir="resources/results/${RUN_ID}"
+publish_dir="results/${RUN_ID}"
 
 echo "Running benchmark on all data"
 echo "  Make sure to have run 'scripts/project/build_all_docker_containers.sh' first!"
 
 # if resources/datasets doesn't exist, tell the user to sync the data
-if [ ! -d "resources/datasets" ]; then
+if [ ! -d "resources" ]; then
   echo "Please sync the data before running the benchmark."
   echo "You can do this by running the following command:"
   echo "  scripts/sync_datasets.sh"
@@ -31,11 +31,16 @@ fi
 # write the parameters to file
 # note: uncomment the settings line to include/exclude specific methods
 cat > /tmp/params.yaml << HERE
-input_states: resources/datasets/cellxgene_census/**/state.yaml
+input_states: resources/Diabetic_Kidney_Disease/state.yaml
 rename_keys: 'input_train:output_train;input_test:output_test;input_solution:output_solution'
 output_state: "state.yaml"
-# settings: '{"methods_include": ["my_own_method"]}'
-# settings: '{"methods_exclude": ["very_slow_method"]}'
+settings: '{"methods_include": ["majority_vote", "random_labels", "true_labels", "knn", "logistic_regression", "seurat_transferdata", "naive_bayes", "singler"]}'
+#settings: '{"metrics_include": ["accuracy", "f1", "sctypeeval"]}'
+output_scores: "scores.yaml"
+output_dataset_info: "dataset_info.yaml"
+output_method_configs: "method_configs.yaml"
+output_metric_configs: "metric_configs.yaml"
+output_task_info: "task_info.yaml"
 publish_dir: "$publish_dir"
 HERE
 
