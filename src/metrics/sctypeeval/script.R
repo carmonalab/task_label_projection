@@ -31,13 +31,13 @@ metadata <- cbind(input_solution$obs, input_prediction$obs)
 cat("Compute metrics\n")
 # annotations to evaluate
 annots <- c("label", "label_pred")
-# sample id
-sample <- "batch"
+
 # black list
 data(default_black_list)
 bl <- list(black.list$TCR,
           black.list$Immunoglobulins,
           black.list$Ygenes) |> unlist()
+cat("Head blacklist:  ", head(bl), "\n")
 # Internal validation metrics
 IntVal_metric <- c("silhouette", "NeighborhoodPurity", "ward.PropMatch",
                   "modularity", "ward.NMI", "ward.ARI","GraphConnectivity",
@@ -45,20 +45,21 @@ IntVal_metric <- c("silhouette", "NeighborhoodPurity", "ward.PropMatch",
 
 cat("Creating scTypeEval object\n")
 sceval <- create.scTypeEval(matrix = matrix,
-                            metadata = metadata)
+                            metadata = metadata,
+                            black.list = bl)
 
 cat("Adding HVG gene list\n")
 sceval <- add.HVG(sceval,
-                  sample = sample,
-                  black.list = bl
+                  sample = "batch"
                   )
 
+cat("Running consistency metrics\n")
 consistency_df <- 
   lapply(annots,
         function(annot){
           Run.scTypeEval(scTypeEval = sceval,
                           ident = annot, # annotation method to evaluate
-                          sample = sample,
+                          sample = "batch",
                           IntVal.metric = IntVal_metric,
                           BH.method = c("Mutual.Score", "Mutual.Match"),
                           data.type = c("sc", "pseudobulk", "pseudobulk_1vsall"),
@@ -68,6 +69,7 @@ consistency_df <-
                           )
     })
 
+cat("Joining results\n")
 consistency_df <- do.call(rbind, consistency_df)
 
 cat(">> Create output data\n")
