@@ -1,5 +1,5 @@
 /resources/*/*
-/results/
+/results/*/
 /resources_test
 /work
 /.nextflow*
