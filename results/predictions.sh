@@ -10,7 +10,7 @@ outputdir=~/Documents/Projects/OPS/task_label_projection/results/predictions
 # List of datasets
 datasets=("GTEX_v9" "Diabetic_Kidney_Disease")
 # List of methods
-methods=("majority_vote" "random_labels" "true_labels" "knn" "logistic_regression" "seurat_transferdata" "naive_bayes" "singler")
+methods=("majority_vote" "random_labels" "true_labels" "knn" "logistic_regression" "seurat_transferdata" "naive_bayes" "singler" "mlp" "scimilarity" "scANVI" "scprint" "xgboost")
 
 
 for dataset in "${datasets[@]}"; do
